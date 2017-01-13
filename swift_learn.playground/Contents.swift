@@ -1264,3 +1264,471 @@ class HTMLElement {
 var paragraph: HTMLElement? = HTMLElement(name: "p", text: "Hello")
 print(paragraph!.asHTML())
 paragraph = nil
+
+
+// ---------- Swift类型转换 --------------
+class Subject {
+    var physics: String
+    init(physics: String) {
+        self.physics = physics
+    }
+}
+
+class Chemistry : Subject {
+    var equation: String
+    init(physics: String, equation: String) {
+        self.equation = equation
+        super.init(physics: physics)
+    }
+}
+
+class Maths : Subject {
+    var formulae : String
+    init(physics: String, formulae: String) {
+        self.formulae = formulae
+        super.init(physics: physics)
+    }
+}
+
+let sa = [
+    Chemistry(physics:"固体物理", equation: "赫兹"),
+    Maths(physics: "流体动力学", formulae: "千兆赫"),
+    Chemistry(physics:"热物理学", equation:"分贝"),
+    Maths(physics: "天体物理学", formulae: "兆赫"),
+    Maths(physics: "微分方程", formulae: "余弦级数")
+]
+
+let samplechem = Chemistry(physics: "固体物理", equation: "赫兹")
+print("实例物理学是: \(samplechem.physics)")
+print("实例方程式: \(samplechem.equation)")
+
+let samplemaths = Maths(physics: "流体动力学", formulae: "千兆赫")
+print("实例物理学是: \(samplemaths.physics)")
+print("实例公式是: \(samplemaths.formulae)")
+
+var chemCount = 0
+var mathsCount = 0
+for item in sa {
+    //类型检查用is关键字，检查一个实例是否属于特定子类型
+    if item is Chemistry {
+        chemCount += 1
+    } else if item is Maths {
+        mathsCount += 1
+    }
+}
+
+print("ChemCount: \(chemCount) mathsCount: \(mathsCount)")
+
+
+// 向下转型  
+// ////////// 感觉 这个例子里并没有做转型啊!!!!
+for item in sa {
+    // 当你不确定向下转型可以成功时，用类型转换的条件形式(as?)。它总是返回一个可选值，并且若
+    // 向下转型是不可能的，可选值将是nil
+    if let show = item as? Chemistry {
+        print("Chemistry: '\(show.physics)','\(show.equation)'")
+    // 而当你可以确定向下转型一定会成功时，才使用强制形式(as!)。当你试图向下转型一个不正确的
+    // 类型时，它会触发一个运行时错误
+    } else if let example = item as? Maths {
+        print("Math: '\(example.physics)', \(example.formulae)")
+    }
+}
+
+
+// Any 和 AnyObject 的类型转换
+// AnyObject可以代表 任何class类型的实例
+// Any 可以表示 任何类型，包括方法类型(function types)
+
+//     Any
+var exampleany = [Any]()
+
+exampleany.append(12)
+exampleany.append(3.1234)
+exampleany.append("Any")
+exampleany.append(Chemistry(physics: "固体物理", equation: "兆赫"))
+
+for item2 in exampleany {
+    switch item2 {
+    case let someInt as Int:
+        print("Int is : \(someInt)")
+    case let someDouble as Double where someDouble > 0:
+        print("Double is : \(someDouble)")
+    case let someStr as String:
+        print("String is : \(someStr)")
+    case let phy as Chemistry:
+        print("Chemistry: \(phy.physics)")
+    default:
+        print("None")
+    }
+}
+
+//    AnyObject
+let saprint: [AnyObject] = [
+    Chemistry(physics: "P1", equation: "E1"),
+    Maths(physics: "M1", formulae: "F1"),
+    Chemistry(physics: "P2", equation: "E2")
+]
+for item in saprint {
+    if let show = item as? Chemistry {
+        print("Chemistry: '\(show.physics)'")
+    } else if let example = item as? Maths {
+        print("Maths: \(example.physics)")
+    }
+}
+
+// ----- Swift 扩展 ------
+// 扩展就是向一个已有的类、结构体或枚举类型添加新功能
+// 扩展可以对一个类型添加新的功能，但是不能重写已有的功能
+// swift中的扩展可以：
+// + 添加计算型属性和计算型静态属性
+// + 定义实例方法和类型方法
+// + 提供新的构造器
+// + 定义下标
+// + 定义和使用新的嵌套类型
+// + 使一个已有类型符合某个协议 
+
+// 计算型属性
+extension Int {
+    var add: Int { return self + 100 }
+    var sub: Int { return self - 10 }
+    var mul: Int { return self * 10 }
+}
+let addition2 = 3.add
+print("Afeter addition: \(addition2)")
+
+// 构造器
+// 扩展可以向已有类型添加新的构造器
+// 这可以让你扩展其它类型，将你自己的定制类型作为构造器参数，或者提供该类型的原始实现中没有包含的额外初始化选项
+// 扩展可以向类中添加新的便利构造器init(),但是它们不能向类中添加新的指定构造器或析构函数deinit()
+struct e_sum {
+    var num1 = 100, num2 = 200
+}
+struct e_diff {
+    var no1 = 200, no2 = 100
+}
+struct e_mult {
+    var a = e_sum()
+    var b = e_diff()
+}
+extension e_mult {
+    init(x: e_sum, y:e_diff) {
+        _ = x.num1 + x.num2
+        _ = y.no1 + y.no2
+    }
+}
+let es = e_sum(num1: 100, num2: 200)
+let ed = e_diff(no1: 200, no2: 100)
+
+let getMult = e_mult(x:es, y:ed)
+print("getMult sum\(getMult.a.num1, getMult.a.num2)")
+
+// 扩展方法
+// 向已有类型添加新的实例方法和类型方法
+
+extension Int {
+    func topics(summation: () -> ()) {
+        for _ in 0..<self {
+            summation()
+        }
+    }
+}
+// ()->() 函数没有参数也没有返回值
+4.topics(summation: {
+    print("func added from extenal")
+})
+
+// 可变实例方法
+// 通过扩展添加的实例访求 也可以修改该实例本身
+
+// 如下例子，为Double类型添加了一个新的名为square的修改方法，实现原始值的平方计算
+extension Double {
+    mutating func square () {
+        let pi = 3.1415
+        self = pi * self * self
+    }
+}
+var Trial1 = 3.3
+Trial1.square()
+print("Square is: \(Trial1)")
+
+
+
+// 下标
+// 扩展可以向一个已有类型添加新下标
+
+extension Int {
+    subscript ( multtable: Int) -> Int {
+        var multtable = multtable
+        var no1 = 1
+        while multtable > 0 {
+            no1 *= 10
+            multtable -= 1
+        }
+         return (self/no1)%10
+    }
+}
+print(12[0])
+
+// 嵌套类型
+// 扩展可以向已有的类、结构体和枚举新的嵌套类型
+
+
+extension Int {
+    enum calc {
+        case add
+        case sub
+        case mult
+        case div
+        case anything
+    }
+    var print: calc {
+        switch self {
+        case 0:
+            return .add
+        case 1:
+            return .sub
+        case 2:
+            return .mult
+        case 3:
+            return .div
+        default:
+            return .anything
+        }
+    }
+}
+
+func result(numb: [Int])
+{
+    for i in numb {
+        switch i.print {
+        case .add:
+            print("10")
+        case .sub:
+            print("20")
+        case .div:
+            print("40")
+        default:
+            print("60")
+        }
+    }
+}
+result(numb: [0, 1, 2, 3, 4, 7])
+
+
+
+// -------------  swift 协议  ------------
+// 协议规定了用来实现某一特定功能所必需的方法和属性
+// 任意能够满足协议要求的类型被称为遵循这个协议
+// 类、结构体或枚举类型都可以遵循协议，并提供具体实现来完成协议定义的方法和功能
+// 格式：
+// class SomeClass : SomeSuperClass, FirstProtocol, AnotherProtocol {
+// }
+
+
+// 1. 对属性的规定
+// 协议 用于 指定特定的实例属性或类属性，而不用指定是存储属性或计算属性。此外还必须指明是只读的还是可读可写的
+// 协议中通常用var来声明变量属性，在类型声明后加上{set get}来表示属性可读可写,{get}来表明只读
+protocol P1_Class {
+    var marks : Int { get set }
+    var result : Bool { get }
+    
+    func attendence() -> String
+    func marksecured() -> String
+}
+protocol P2_Class : P1_Class {
+    var present : Bool { get set }
+    var subject : String { get set }
+    var stname : String { get set }
+}
+
+class ProtocolClass : P2_Class {
+
+    var marks = 96
+    let result = true
+    var present = false
+    var subject = "Swift protocol"
+    var stname = "Protocol"
+    
+    func attendence() -> String {
+        return "The \(stname) has secured 99% attendance"
+    }
+    
+    internal func marksecured() -> String {
+        return "\(stname) has scored \(marks)"
+    }
+}
+
+let p_student = ProtocolClass()
+p_student.stname = "Swift"
+p_student.marks = 98
+p_student.marksecured()
+print(p_student.marks)
+print(p_student.result)
+print(p_student.present)
+
+// 2. 对mutating方法的规定
+// 有时需要在方法中改变它的实例
+// 例如，值类型（结构体、枚举)的实例方法中，将mutating关键字作为 函数的前缀，写在func之前，表示可以在该
+// 方法中修改它所属的实例及其实例属性的值
+protocol P_DaysOfWeek {
+    mutating func show()
+}
+enum E_Days : P_DaysOfWeek {
+    case sun, mon, tue, wed, thurs, fri, sat
+    mutating func show() {
+        switch self {
+        case .sun:
+            self = .sun
+            print("Sunday")
+        default:
+            print("NO such a day")
+        }
+    }
+}
+var e_wed = E_Days.wed
+e_wed.show()
+
+
+// 3. 对构造器的规定
+// 协议可以要求它的遵循者实现指定的构造器
+// 协议构造器规定在类中的实现
+// 你可以在遵循该协议的类中实现构造器，并指定其为类的指定构造器或者便利构造器。
+class B_Class {
+    var no1: Int
+    init (no1: Int) {
+        self.no1 = no1
+    }
+}
+protocol P_Tcp {
+    init(no1: Int)
+}
+class C_Tcp : B_Class, P_Tcp {
+    // 使用required修饰符可以保证 所有的遵循该协议的子类，同样能够为构造器规定提供一个显式的实现或继承。
+    // 如果一个子类重写了父类的指定构造器，并且该构造器遵循了某个协议的规定，那么该构造器的实例需要同时标
+    // 注 required和override
+
+    // 在此，因为遵循协议，需要加上"required"，因为继承自父类，需要加上"override"
+    required override init(no1: Int) {
+        super.init(no1 : no1)
+    }
+    
+}
+
+
+// 4. 协议类型
+// 尽管协议 本身并不实现任何功能，但是协议可以被当作类型来使用
+// 协议可以像其他普通类型一样使用，使用场景：
+// 作为函数、方法或构造器中的参数类型或返回值类型
+// 作为常量、变量或属性的类型
+// 作为数组、字典或其他容器中的元素类型
+protocol Generator {
+    associatedtype members
+    func next() -> members?
+}
+var item_iter = [10, 20, 30].makeIterator()
+while let x = item_iter.next() {
+    print(x)
+}
+for lists in [1, 2, 3].map({i in i * 5}) {
+    print(lists)
+}
+print([100, 200, 300])
+print([1, 2, 3].map({i in i*10}))
+
+// 5. 在扩展中添加协议成员
+// 我们可以通过扩展来扩充已存在类型
+// 扩展可以为已存在的类型添加属性、方法、下标脚本、协议等成员
+protocol AgeClasifcationProtocol {
+    var age: Int { get }
+    func ageType() -> String
+}
+class Person3 {
+    let firstname : String
+    let lastname : String
+    var age : Int
+    init(firstname: String, lastname: String) {
+        self.firstname = firstname
+        self.lastname = lastname
+        self.age = 10
+    }
+}
+extension Person3 : AgeClasifcationProtocol {
+    func fullname() -> String {
+        var c: String
+        c = firstname + " " + lastname
+        return c
+    }
+    func ageType() -> String {
+        switch age {
+        case 0...2:
+            return "Baby"
+        case 2...12:
+            return "Child"
+        case 13...19:
+            return "Teenager"
+        case let x where x > 65:
+            return "Elderly"
+        default:
+            return "Normal"
+        }
+    }
+}
+var person_3 = Person3(firstname: "Ian", lastname: "lan")
+print(person_3.ageType())
+
+// 6. 协议的继承
+// 协议能够继承一个或多个其他协议，可以在继承的协议基础上增加新的内容要求
+// protocol InheritingProtocol : SomeProtocol, AnotherProtocol { // 协议定义 }
+
+// 7. 类的专属协议 
+// 你可以在协议的继承列表中，通过添加 class 关键字，限制协议只能适配到类(class)类型
+// 该class关键字必须是第一个出现在协议的继承列表中，其后才是其他继承协议 
+// protocol SomeClassOnlyProtocol : class, someInheritedProtocol
+
+// 8. 协议合成
+// swift支持合成多个协议，这在我们需要同时遵循多个协议时非常有用
+protocol Stname {
+    var name : String { get }
+}
+protocol Stage {
+    var age : Int { get }
+}
+struct Person4 : Stname, Stage {
+    var name : String
+    var age : Int
+}
+
+//  9. 检查协议的一致性
+// 你可以使用is和as操作符来检查是否遵循某一协议或强制转化为某一类型
+// + is 操作符用来检查实例是否遵循了某个协议 
+
+protocol HasArea {
+    var area :  Double { get }
+}
+class Circle2 : HasArea {
+    let pi = 3.14159
+    var radius: Double
+    var area: Double { return pi * radius * radius }
+    init(radius: Double) { self.radius = radius }
+}
+class Animal2  {
+    var legs : Int
+    init(legs: Int) { self.legs = legs }
+}
+let objects: [AnyObject] = [
+    Circle2(radius: 2.0),
+    Animal2(legs: 4)
+]
+for o in objects {
+    // 对迭代出的每一个元素进行检查，看它是否遵循了HasArea协议
+    if let objectWithArea = o as? HasArea {
+        print("Square is \(objectWithArea.area)")
+    } else {
+        print("No square")
+    }
+}
+
+
+
+
+// ------------- Swift 泛型 -----------------
