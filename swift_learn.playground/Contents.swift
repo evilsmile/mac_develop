@@ -1732,3 +1732,154 @@ for o in objects {
 
 
 // ------------- Swift 泛型 -----------------
+func swapTwoInts(_ a: inout Int, _ b : inout Int)
+{
+    let tempA = a
+    a = b
+    b = tempA
+}
+var numb1 = 100
+var numb2 = 200
+print("Before Switch: \(numb1) and \(numb2)")
+swapTwoInts(&numb1, &numb2)
+print("After Switch: \(numb1) and \(numb2)")
+
+// 将交换功能放到泛型中
+func swapTwoValues<T>(_ a: inout T, _ b: inout T) {
+    let tempA = a
+    a = b
+    b = tempA
+}
+var r_num1 = 123
+var r_num2 = 321
+print("Before FX Int Switch: \(r_num1) and \(r_num2)")
+swapTwoValues(&r_num1, &r_num2)
+print("After FX Int Switch: \(r_num1) and \(r_num2)")
+
+var r_str1 = "A"
+var r_str2 = "B"
+print("Before FX Str Switch: \(r_str1) and \(r_str2)")
+swapTwoValues(&r_str1, &r_str2)
+print("After FX Str Switch: \(r_str1) and \(r_str2)")
+
+// 泛型栈示例
+struct Stack<Element> {
+    var items = [Element]()
+    // 标记为mutating，因为 它们需要修改结构体的items数组
+    mutating func push(_ item: Element) {
+        items.append(item)
+    }
+    mutating func pop() -> Element {
+        return items.removeLast()
+    }
+}
+
+var strStack = Stack<String>()
+strStack.push("Google")
+strStack.push("Baidu")
+print(strStack.items)
+
+let outElem = strStack.pop()
+print("Out: \(outElem)")
+
+
+// 扩展泛型类型
+extension Stack {
+    var topItem: Element? {
+        return items.isEmpty ? nil : items[items.count - 1]
+    }
+}
+if let topItem = strStack.topItem {
+    print("top stack: \(topItem)")
+}
+
+
+// 关联类
+// Swift中使用associatedtype关键字来设置关联类型实例
+
+// 下面例子定义一个Container协议，该协议定义了一个关联类型ItemType
+// Container 协议只指定了三个任何遵从Container协议的类型必须提供的功能。
+protocol Container {
+    associatedtype ItemType
+    mutating func append(_ item: ItemType)
+    var count: Int { get }
+    subscript(i: Int) -> ItemType { get }
+}
+
+struct Stack2<T> : Container {
+    var items = [T]()
+    mutating func push(_ item: T) {
+        items.append(item)
+    }
+    mutating func pop() -> T {
+        return items.removeLast()
+    }
+    mutating func append(_ item: T) {
+        self.push(item)
+    }
+    var count: Int {
+        return items.count
+    }
+    subscript(i: Int) -> T {
+        return items[i]
+    }
+}
+
+var tos = Stack2<String>()
+tos.push("Kobe")
+tos.push("Mac")
+tos.push("Ivsion")
+print("count is: \(tos.count)")
+
+// Where
+// 类型约束能够确保类型符合泛型函数或类的定义约束
+// 你可以在参数列表中通过where语句定义参数的约束
+
+// 扩展，将Array当作Container来使用
+extension Array : Container {}
+
+func allItemsMatch<C1: Container, C2: Container> (_ someContainer: C1, _ anotherContainer: C2) -> Bool
+    where C1.ItemType == C2.ItemType, C1.ItemType: Equatable {
+        if someContainer.count != anotherContainer.count {
+            return false
+        }
+        
+        for i in 0..<someContainer.count {
+            if someContainer[i] != anotherContainer[i] {
+                print("'\(someContainer[i])' not matches '\(anotherContainer[i])'")
+                return false
+            }
+        }
+        return true
+}
+var aos = ["Kobe", "Mac", "Ivson"]
+if allItemsMatch(tos, aos) {
+    print("All match!")
+} else {
+    print("Some not match!")
+}
+
+
+// ----------- Swift 访问控制 --------
+// 访问控制 可以限定其他源文件或模块代码对你代码的访问级别
+// 你可以明确地给单个类型设置访问级别，也可以给这些类型的属性、函数、初始化方法、基本类型、下标索引等设置访问级别
+// 协议也可以被限定在一定的范围内使用，包括协议里的全局常量、变量和函数
+// Swift为代码中的实体提供了四种不同的访问级别: public, internal, fileprivate, private
+//  public: 可以访问自己模块中源文件里的任何实体，别人也可以通过引入该模块来访问源文件里的所有实体
+//  internal: 可以访问自己模块中源文件里的任何实体，但是别人不能访问该模块源文件里的实体
+//  fileprivate: 文件内私有，只能在当前源文件中使用
+//  private: 只能在类中访问，离开了这个类或结构体的作用域外面就无法访问
+// 除非有特殊的说明，否则实体都使用默认的访问级别internal
+
+public class PublicClass { }
+internal class InternalClass { }
+fileprivate class FilePrivateClass { }
+private class PrivateClass { }
+public var somePublicVar = 0
+internal let someInternalConst = 0
+fileprivate func someFilePrivateFunc() { }
+private func somePrivateFunc() { }
+
+class SomeInternalClass { } // level of internal
+
+
